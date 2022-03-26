@@ -1,0 +1,18 @@
+[package]
+name = "a_star"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "a_star"
+path = "src/lib.rs"
+
+[[bin]]
+name = "a_star_example"
+path = "src/main.rs"
+
+[dependencies]
+image = "0.24.1"
+rand = "0.8.5"
