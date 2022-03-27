@@ -29,25 +29,33 @@ impl Point {
         self.y
     }
 
-    pub fn distance(&self, other: &Point) -> usize {
-
-        let x_distance = if self.x > other.x {
+    pub fn x_distance(&self, other: &Point) -> usize {
+        if self.x > other.x {
             self.x - other.x
         } else {
             other.x - self.x
-        };
+        }
+    }
 
-        let y_distance = if self.y > other.y {
+    pub fn y_distance(&self, other: &Point) -> usize {
+        if self.y > other.y {
             self.y - other.y
         } else {
             other.y - self.y
-        };
+        }
+    }
+
+    pub fn distance(&self, other: &Point) -> usize {
+
+        let x_distance = self.x_distance(other);
+        let y_distance = self.y_distance(other);
 
         let sum = x_distance * x_distance + y_distance + y_distance;
 
         (sum as f64).sqrt() as usize
 
     }
+
 }
 
 impl Ord for Point {
@@ -136,13 +144,43 @@ impl Field {
         self.array[point.x + point.y * self.width]
     }
 
-    fn h_cost(&self, point: &Point, goal: &Point) -> usize {
+    fn g_cost(path_point: &PathPoint, other: &Point) -> usize {
+        let x_distance = path_point.position().x_distance(other);
+        let y_distance = path_point.position().y_distance(other);
+
+        let sum = x_distance + y_distance;
+        let remainder = sum % 2;
+
+        if remainder == 0 {
+            14
+        } else {
+            10
+        }
+    }
+
+    fn h_cost(point: &Point, goal: &Point) -> usize {
         point.distance(goal)
     }
 
-    fn get_neighbours(&self, position: &Point, goal: &Point) -> Vec<PathPoint> {
+    fn get_neighbours(&self, path_point: &PathPoint, goal: &Point) -> Vec<PathPoint> {
         //TODO: collect neighbours aka floor tiles
-        Vec::new()
+        let mut neighbours = Vec::new();
+
+        for y in path_point.position().y-1..path_point.position().y+1 {
+            for x in path_point.position().x-1..path_point.position().x+1 {
+                let point = Point::new(x, y);
+
+                if point != path_point.position {
+                    if self.get_tile(&point) == Tile::Floor {
+                        let new_g_cost = Self::g_cost(path_point, &point);
+                        let new_h_cost = Self::h_cost(&point, goal);
+                        neighbours.push(PathPoint::new(point, new_g_cost, new_h_cost));
+                    }
+                }
+            }
+        }
+
+        neighbours
     }
 
     pub fn find_path(&self, start: &Point, goal: &Point) -> Option<Path> {
@@ -153,23 +191,32 @@ impl Field {
         } else {
 
             let mut open_set = BinaryHeap::<PathPoint>::new();
-            let mut came_from_map = HashMap::<PathPoint, PathPoint>::new();
-            let mut g_score_map = HashMap::<PathPoint, usize>::new();
-            let mut f_score_map = HashMap::<PathPoint, usize>::new();
+            let mut came_from_map = HashMap::<Point, Point>::new();
+            let mut g_score_map = HashMap::<Point, usize>::new();
+            let mut f_score_map = HashMap::<Point, usize>::new();
 
-            let mut start_path_point = PathPoint::new(*start, 0, self.h_cost(start, goal));
+            let mut start_path_point = PathPoint::new(*start, 0, Self::h_cost(start, goal));
 
             open_set.push(start_path_point);
 
-            while let Some(PathPoint { position, g_cost, h_cost }) = open_set.pop() {
-                if position == *goal {
+            while let Some(path_point) = open_set.pop() {
+                if path_point.position() == *goal {
                     //TODO: reconstruct path
                 }
 
-                let neighbours = self.get_neighbours(&position, goal);
+                let neighbours = self.get_neighbours(&path_point, goal);
 
                 for neighbour in neighbours {
 
+                    if !came_from_map.contains_key(&neighbour.position()) {
+                        if neighbour.g_cost() < g_score_map[&neighbour.position()] {
+                            came_from_map.insert(neighbour.position(), path_point.position());
+                            g_score_map.insert(neighbour.position(), neighbour.g_cost());
+                            f_score_map.insert(neighbour.position(), neighbour.f_cost());
+
+                            if open_set.
+                        }
+                    }
                 }
             }
 
@@ -189,6 +236,18 @@ impl PathPoint {
 
     pub fn new(position: Point, g_cost: usize, h_cost: usize) -> Self {
         PathPoint { position, g_cost, h_cost }
+    }
+
+    pub fn position(&self) -> Point {
+        self.position
+    }
+
+    pub fn g_cost(&self) -> usize {
+        self.g_cost
+    }
+
+    pub fn h_cost(&self) -> usize {
+        self.h_cost
     }
 
     pub fn f_cost(&self) -> usize {
