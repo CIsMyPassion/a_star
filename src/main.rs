@@ -1,9 +1,8 @@
-use a_star::field::{Point, Field};
+use a_star::{Field, Point};
 
 fn main() {
-    let s = Point::new(0, 0);
-    let g = Point::new(31, 31);
-    let f = Field::new(32, 32, s, g, 0.3);
-    println!("Hello, world!");
-    println!("Width: {}, Height: {}", f.widht(), f.height())
+    let field = Field::new(32, 32, 0.3);
+    let start = Point::new(0, 0);
+    let end = Point::new(31, 31);
+    field.show();
 }
