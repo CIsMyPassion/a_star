@@ -1,5 +1,5 @@
 use std::cmp::Ordering;
-use std::collections::{BinaryHeap, HashMap};
+use std::collections::HashMap;
 
 use rand::distributions::{Bernoulli, Distribution};
 
@@ -9,7 +9,7 @@ pub enum Tile {
     Wall,
 }
 
-#[derive(Clone, Copy, Eq, PartialEq, Hash)]
+#[derive(Clone, Copy, Eq, PartialEq, Hash, Debug)]
 pub struct Point {
     x: usize,
     y: usize,
@@ -144,17 +144,18 @@ impl Field {
         self.array[point.x + point.y * self.width]
     }
 
-    fn g_cost(path_point: &PathPoint, other: &Point) -> usize {
-        let x_distance = path_point.position().x_distance(other);
-        let y_distance = path_point.position().y_distance(other);
+    fn g_cost(point: &Point, other: &Point, g_score_map: &HashMap<Point, usize>) -> usize {
+
+        let x_distance = point.x_distance(other);
+        let y_distance = point.y_distance(other);
 
         let sum = x_distance + y_distance;
         let remainder = sum % 2;
 
         if remainder == 0 {
-            14
+            g_score_map[other] + 14
         } else {
-            10
+            g_score_map[other] + 10
         }
     }
 
@@ -162,25 +163,62 @@ impl Field {
         point.distance(goal)
     }
 
-    fn get_neighbours(&self, path_point: &PathPoint, goal: &Point) -> Vec<PathPoint> {
-        //TODO: collect neighbours aka floor tiles
+    fn get_neighbours(&self, center_point: &Point) -> Vec<Point> {
         let mut neighbours = Vec::new();
 
-        for y in path_point.position().y-1..path_point.position().y+1 {
-            for x in path_point.position().x-1..path_point.position().x+1 {
+        let lower_y = if center_point.y > 0 {
+            center_point.y - 1
+        } else {
+            center_point.y
+        };
+
+        let lower_x = if center_point.x > 0 {
+            center_point.x - 1
+        } else {
+            center_point.x
+        };
+
+        let upper_y = if center_point.y < self.height - 1 {
+            center_point.y + 1
+        } else {
+            center_point.y
+        };
+
+        let upper_x = if center_point.x < self.width - 1 {
+            center_point.x + 1
+        } else {
+            center_point.x
+        };
+
+        for y in lower_y..upper_y+1 {
+            for x in lower_x..upper_x+1 {
                 let point = Point::new(x, y);
 
-                if point != path_point.position {
+                if point != *center_point {
                     if self.get_tile(&point) == Tile::Floor {
-                        let new_g_cost = Self::g_cost(path_point, &point);
-                        let new_h_cost = Self::h_cost(&point, goal);
-                        neighbours.push(PathPoint::new(point, new_g_cost, new_h_cost));
+                        neighbours.push(point);
                     }
                 }
             }
         }
 
         neighbours
+    }
+
+    fn reconstruct_path(goal: &Point, came_from_map: &HashMap::<Point, Point>) -> Path {
+        let mut steps = Vec::new();
+        let mut current = goal;
+
+        steps.push(*current);
+
+        while let Some(next) = came_from_map.get(current) {
+            current = next;
+            steps.push(*current);
+
+        }
+
+        steps.reverse();
+        Path { start: Point::new(0, 0), goal: *goal, steps }
     }
 
     pub fn find_path(&self, start: &Point, goal: &Point) -> Option<Path> {
@@ -190,34 +228,46 @@ impl Field {
 
         } else {
 
-            let mut open_set = BinaryHeap::<PathPoint>::new();
+            let mut open_set = Vec::<Point>::new();
             let mut came_from_map = HashMap::<Point, Point>::new();
             let mut g_score_map = HashMap::<Point, usize>::new();
             let mut f_score_map = HashMap::<Point, usize>::new();
 
-            let mut start_path_point = PathPoint::new(*start, 0, Self::h_cost(start, goal));
+            open_set.push(*start);
+            g_score_map.insert(*start, 0);
 
-            open_set.push(start_path_point);
-
-            while let Some(path_point) = open_set.pop() {
-                if path_point.position() == *goal {
-                    //TODO: reconstruct path
+            while let Some(point) = open_set.pop() {
+                if point == *goal {
+                    return Some(Self::reconstruct_path(goal, &came_from_map))
                 }
 
-                let neighbours = self.get_neighbours(&path_point, goal);
+                let neighbours = self.get_neighbours(&point);
 
                 for neighbour in neighbours {
 
-                    if !came_from_map.contains_key(&neighbour.position()) {
-                        if neighbour.g_cost() < g_score_map[&neighbour.position()] {
-                            came_from_map.insert(neighbour.position(), path_point.position());
-                            g_score_map.insert(neighbour.position(), neighbour.g_cost());
-                            f_score_map.insert(neighbour.position(), neighbour.f_cost());
+                    let neighbour_g_cost = Self::g_cost(&neighbour, &point, &g_score_map);
 
-                            if open_set.
+                    if !came_from_map.contains_key(&neighbour) {
+                        if g_score_map.contains_key(&neighbour) {
+                            if g_score_map[&neighbour] > neighbour_g_cost {
+
+                                came_from_map.insert(neighbour, point);
+                                g_score_map.insert(neighbour, neighbour_g_cost);
+                                f_score_map.insert(neighbour, neighbour_g_cost + Self::h_cost(&neighbour, goal));
+                            }
+
+                        } else {
+
+                            came_from_map.insert(neighbour, point);
+                            g_score_map.insert(neighbour, neighbour_g_cost);
+                            f_score_map.insert(neighbour, neighbour_g_cost + Self::h_cost(&neighbour, goal));
+
+                            open_set.push(neighbour);
                         }
                     }
                 }
+
+                open_set.sort_by(|a, b| f_score_map[b].cmp(&f_score_map[a]));
             }
 
             None
@@ -225,60 +275,13 @@ impl Field {
     }
 }
 
-#[derive(Clone, Copy, Eq, PartialEq, Hash)]
-pub struct PathPoint {
-    position: Point,
-    g_cost: usize,
-    h_cost: usize,
-}
-
-impl PathPoint {
-
-    pub fn new(position: Point, g_cost: usize, h_cost: usize) -> Self {
-        PathPoint { position, g_cost, h_cost }
-    }
-
-    pub fn position(&self) -> Point {
-        self.position
-    }
-
-    pub fn g_cost(&self) -> usize {
-        self.g_cost
-    }
-
-    pub fn h_cost(&self) -> usize {
-        self.h_cost
-    }
-
-    pub fn f_cost(&self) -> usize {
-        self.g_cost + self.h_cost
-    }
-}
-
-impl Ord for PathPoint {
-    fn cmp(&self, other: &Self) -> Ordering {
-        other.f_cost().cmp(&self.f_cost())
-            .then_with(|| self.position.cmp(&other.position))
-    }
-}
-
-impl PartialOrd for PathPoint {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
 pub struct Path {
     start: Point,
     goal: Point,
-    steps: Vec<PathPoint>,
+    steps: Vec<Point>,
 }
 
 impl Path {
-
-    pub fn new(start: Point, goal: Point) -> Self {
-        Path { start, goal, steps: Vec::new() }
-    }
 
     pub fn start(&self) -> &Point {
         &self.start
@@ -288,7 +291,7 @@ impl Path {
         &self.goal
     }
 
-    pub fn steps(&self) -> &Vec<PathPoint> {
+    pub fn steps(&self) -> &Vec<Point> {
         &self.steps
     }
 }
