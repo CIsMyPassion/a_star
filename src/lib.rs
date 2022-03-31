@@ -3,6 +3,8 @@ use std::collections::HashMap;
 
 use rand::distributions::{Bernoulli, Distribution};
 
+pub mod visualize;
+
 #[derive(Clone, Copy, PartialEq)]
 pub enum Tile {
     Floor,
