@@ -1,4 +1,7 @@
 use image::{Rgb, ImageBuffer};
+use gif::{Frame, Encoder, Repeat};
+use std::fs::File;
+use std::borrow::Cow;
 
 use crate::{Field, Tile, Point, Path};
 
@@ -47,6 +50,78 @@ pub fn visualize_scaled_field_with_path(field: &Field, path: &Path, scaler: u32,
     image_buffer.save(file_path).unwrap();
 }
 
+pub fn visualize_scaled_field_with_path_steps(field: &Field, path: &Path, scaler: u16, file_path: &str) {
+
+    let image_width = field.width() as u16 * scaler;
+    let image_height = field.height() as u16 * scaler;
+    let step_count = path.steps().len();
+    let color_map_size = if step_count + 2 > 256 {
+        256
+    } else {
+        step_count + 2
+    };
+
+    //let color_map = &[0xFF, 0x00];
+    let mut color_map: Vec<u8> = Vec::with_capacity(color_map_size * 3);
+    color_map.push(0xFF);
+    color_map.push(0xFF);
+    color_map.push(0xFF);
+    color_map.push(0x00);
+    color_map.push(0x00);
+    color_map.push(0x00);
+
+    for i in 0..color_map_size - 6 {
+        color_map.push(0xAA);
+        color_map.push(0xAA);
+        color_map.push(0xAA);
+    }
+
+    let mut image_file = File::create(file_path).unwrap();
+    let mut encoder = Encoder::new(&mut image_file, image_width, image_height, &color_map).unwrap();
+    encoder.set_repeat(Repeat::Infinite).unwrap();
+
+    let mut field_map = create_color_map_from_field(&field, scaler);
+
+    for step in 0..step_count {
+        let mut frame = Frame::default();
+        frame.width = image_width;
+        frame.height = image_height;
+        frame.buffer = Cow::Borrowed(&*field_map);
+        encoder.write_frame(&frame).unwrap();
+    }
+
+    /*
+    let color_map = &[0xFF, 0x00, 0x00, 0x00, 0xFF, 0x00];
+    let (width, height) = (6, 6);
+    let beacon_states = [[
+        0, 0, 0, 0, 0, 0,
+        0, 1, 1, 0, 0, 0,
+        0, 1, 1, 0, 0, 0,
+        0, 0, 0, 1, 1, 0,
+        0, 0, 0, 1, 1, 0,
+        0, 0, 0, 0, 0, 0,
+    ], [
+        0, 0, 0, 0, 0, 0,
+        0, 1, 1, 0, 0, 0,
+        0, 1, 0, 0, 0, 0,
+        0, 0, 0, 0, 1, 0,
+        0, 0, 0, 1, 1, 0,
+        0, 0, 0, 0, 0, 0,
+    ]];
+
+    let mut image = File::create(file_path).unwrap();
+    let mut encoder = Encoder::new(&mut image, width, height, color_map).unwrap();
+    encoder.set_repeat(Repeat::Infinite).unwrap();
+    for state in &beacon_states {
+        let mut frame = Frame::default();
+        frame.width = width;
+        frame.height = height;
+        frame.buffer = Cow::Borrowed(&*state);
+        encoder.write_frame(&frame).unwrap();
+    }
+    */
+}
+
 fn create_image_buffer_from_field(field: &Field, scaler: u32) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
     let mut image_buffer = ImageBuffer::new(field.width() as u32 * scaler, field.height() as u32 * scaler);
 
@@ -62,4 +137,29 @@ fn create_image_buffer_from_field(field: &Field, scaler: u32) -> ImageBuffer<Rgb
     }
 
     image_buffer
+}
+
+fn create_color_map_from_field(field: &Field, scaler: u16) -> Vec<u8> {
+
+    let scaled_width = field.width() * scaler as usize;
+    let scaled_height = field.height() * scaler as usize;
+
+    let mut color_field = vec![0; scaled_width * scaled_height];
+
+    for y in 0..field.height() {
+        for x in 0..field.width() {
+            if field.get_tile(&Point::new(x, y)) == Tile::Wall {
+                for iy in 0..scaler {
+                    for ix in 0..scaler {
+                        let total_x = x * scaler as usize + ix as usize;
+                        let total_y = y * scaler as usize + iy as usize;
+                        let total_index = total_x + total_y * scaled_height;
+                        color_field[total_index] = 1;
+                    }
+                }
+            }
+        }
+    }
+
+    color_field
 }

@@ -21,4 +21,5 @@ fn main() {
 
     println!("Solution found\nNumber of steps: {}", found.steps().len());
     visualize_scaled_field_with_path(&field, &found, 4, "path.png");
+    visualize_scaled_field_with_path_steps(&field, &found, 4, "path.gif")
 }
