@@ -13,3 +13,30 @@ Cargo.lock
 # Added by cargo
 
 /target
+
+# Ignore LaTeX compilation artefacts
+
+/latex/*.aux
+/latex/*.glo
+/latex/*.idx
+/latex/*.log
+/latex/*.toc
+/latex/*.ist
+/latex/*.acn
+/latex/*.acr
+/latex/*.alg
+/latex/*.bbl
+/latex/*.blg
+/latex/*.dvi
+/latex/*.glg
+/latex/*.gls
+/latex/*.ilg
+/latex/*.ind
+/latex/*.lof
+/latex/*.lot
+/latex/*.maf
+/latex/*.mtc
+/latex/*.mtc1
+/latex/*.out
+/latex/*.synctex.gz
+/latex/*.pdf
