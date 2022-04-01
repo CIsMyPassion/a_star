@@ -1,15 +1,15 @@
 use a_star::{Field, Point};
 use a_star::visualize::*;
 
-const FIELD_WIDTH: usize = 256;
-const FIELD_HEIGHT: usize = 256;
-const FIELD_DISTRIBUTION: f64 = 0.5;
+const FIELD_WIDTH: usize = 64;
+const FIELD_HEIGHT: usize = 64;
+const FIELD_DISTRIBUTION: f64 = 0.6;
 
 fn main() {
 
     let mut field = Field::new(FIELD_WIDTH, FIELD_HEIGHT, FIELD_DISTRIBUTION);
     let start = Point::new(0, 0);
-    let goal = Point::new(255, 255);
+    let goal = Point::new(63, 63);
     let mut path = None;
 
     let mut counter = 1;
