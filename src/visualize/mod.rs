@@ -70,11 +70,17 @@ pub fn visualize_scaled_field_with_path_steps(field: &Field, path: &Path, scaler
     color_map.push(0x00);
     color_map.push(0x00);
 
-    for i in 0..color_map_size - 6 {
-        color_map.push(0xAA);
-        color_map.push(0xAA);
-        color_map.push(0xAA);
+    for i in 0..color_map_size - 2 {
+        let progress = i as f64 / (color_map_size - 2) as f64;
+        let r_channel = ((1.0 - progress) * 255.0) as u8;
+        let g_channel = (progress * 255.0) as u8;
+
+        color_map.push(r_channel);
+        color_map.push(g_channel);
+        color_map.push(0x00);
     }
+
+    println!("Color map len {}", color_map.len());
 
     let mut image_file = File::create(file_path).unwrap();
     let mut encoder = Encoder::new(&mut image_file, image_width, image_height, &color_map).unwrap();
@@ -86,40 +92,30 @@ pub fn visualize_scaled_field_with_path_steps(field: &Field, path: &Path, scaler
         let mut frame = Frame::default();
         frame.width = image_width;
         frame.height = image_height;
+
+        let start_x = path.steps()[step].x() as u16 * scaler;
+        let start_y = path.steps()[step].y() as u16 * scaler;
+        let end_x = start_x + scaler;
+        let end_y = start_y + scaler;
+
+        let step_to_color_index = remap_value(step as f64, 0.0, step_count as f64, 2.0, color_map_size as f64);
+
+        for y in start_y..end_y {
+            for x in start_x..end_x {
+                let total_index = x as usize + y as usize * image_width as usize;
+                field_map[total_index] = step_to_color_index;
+            }
+        }
+
+        println!("Step count {}", step);
+
         frame.buffer = Cow::Borrowed(&*field_map);
         encoder.write_frame(&frame).unwrap();
     }
+}
 
-    /*
-    let color_map = &[0xFF, 0x00, 0x00, 0x00, 0xFF, 0x00];
-    let (width, height) = (6, 6);
-    let beacon_states = [[
-        0, 0, 0, 0, 0, 0,
-        0, 1, 1, 0, 0, 0,
-        0, 1, 1, 0, 0, 0,
-        0, 0, 0, 1, 1, 0,
-        0, 0, 0, 1, 1, 0,
-        0, 0, 0, 0, 0, 0,
-    ], [
-        0, 0, 0, 0, 0, 0,
-        0, 1, 1, 0, 0, 0,
-        0, 1, 0, 0, 0, 0,
-        0, 0, 0, 0, 1, 0,
-        0, 0, 0, 1, 1, 0,
-        0, 0, 0, 0, 0, 0,
-    ]];
-
-    let mut image = File::create(file_path).unwrap();
-    let mut encoder = Encoder::new(&mut image, width, height, color_map).unwrap();
-    encoder.set_repeat(Repeat::Infinite).unwrap();
-    for state in &beacon_states {
-        let mut frame = Frame::default();
-        frame.width = width;
-        frame.height = height;
-        frame.buffer = Cow::Borrowed(&*state);
-        encoder.write_frame(&frame).unwrap();
-    }
-    */
+fn remap_value(value: f64, low_1: f64, high_1: f64, low_2: f64, high_2: f64) -> u8 {
+    (low_2 + (value - low_1) * (high_2 - low_2) / (high_1 - low_1)) as u8
 }
 
 fn create_image_buffer_from_field(field: &Field, scaler: u32) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
