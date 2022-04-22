@@ -11,6 +11,9 @@
 \usepackage{graphicx}
 \usepackage{tabularx}
 
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
 \setlength{\parindent}{0cm}
 \setlength{\parskip}{3mm}
 \setlength{\textheight}{23.8cm}
@@ -68,31 +71,132 @@ Mannheim, April 2022
 ]
 
 % \begin{multicols}{2}
-\section*{Abstract}
-
-Such Such 
+\begin{abstract}
+Diese Ausarbeitung befasst sich mit dem als A* (sprich: a-star) bekannten Suchalgorithmus. Es werden dessen Einsatzgebiete erläutert und Eigenschaften diskutiert. Des Weiteren wird zum besseren Verständnis die Funktionsweise anhand eines Beispiels visualisiert.
+\end{abstract}
 
 \section*{Einleitung}
 
 
 \section*{Anwendungsgebiete}
 
-\section*{Pseudocode}
+\section*{Funktionsweise}
+
+%Graph als Basis, Initialisierung der Listen, Iterativer Vorwärtschritt, Rekonstruktion des Pfades aus Vorgängerbeziehung, vielleicht als Forschungsfrage Manhattan Metrik und euklidische Metrik als Heuristik vergleichen? Einordnung in künstliche Intelligenz, da Fähigkeit zur Wegfindung Robotern gewisses Maß an Autonomie gibt. 
+
+
+Zunächst wird ein zufälliges Feld mit Hindernissen als Umgebung generiert. Der Initialisierungschritt ist in Algorithmus \ref{alg:ainit} dargestellt. 
+
+\begin{algorithm} 
+\caption{A* Initialisierung} 
+\label{alg:ainit} 
+\begin{algorithmic}
+	\REQUIRE width $w$, height $h$
+	
+	\STATE $field \leftarrow vector(w*h)$
+	
+	
+	\FOR{$x \in 0...w$}	
+	\FOR{$y \in 0...h$}
+
+	\STATE $sample \leftarrow rand(0,1)$	
+	\IF{$sample$}
+
+	\STATE $vec[x,y] \leftarrow wall$	
+	
+	\ELSE
+	
+	\STATE $vec[x,y] \leftarrow floor$	
+	
+	\ENDIF	
+	
+	\ENDFOR
+	\ENDFOR
+\end{algorithmic}
+\end{algorithm}
+
+Auf dem generierten Feld wird die Suchfunktion des A* ausgeführt. In Algorithmus \ref{alg:find} wird der Suchschritt gezeigt.
+
+\begin{algorithm} 
+\caption{A* Wegfindung} 
+\label{alg:find} 
+\begin{algorithmic}
+	\REQUIRE point $start$, point $goal$, field $field$ 	
+	
+	\STATE new vector $open\_set$
+	\STATE new map $predecessor\_map$ 
+	
+	\STATE add $start$ to $open\_set$
+	
+	\WHILE{$point \leftarrow open\_set.pop()$}
+	\IF{$point = goal$}
+	\STATE \textbf{return} $goal, predecessor\_map$	
+	\ENDIF
+	\STATE $neighbours \leftarrow get\_neighbours(point)$
+	
+	\FOR{$neighbour$ \textbf{in} $\neighbours$}
+	
+	\STATE $cost \leftarrow	g(neighbour)$
+	
+	\IF{\textbf{not} $neighbour$ \textbf{in} $predecessor\_map$}
+
+	\STATE predecessor_map.insert(neighbour, point)
+	
+	\STATE add $neigbour$ to $open\_set$	
+	
+	\ENDIF
+	
+	\STATE sort $open\_set$ by lowest cost		
+		
+	\ENDFOR
+	\ENDWHILE
+\end{algorithmic}
+\end{algorithm}
+
+Mittels des in Algorithmus \ref{alg:find} spezifizierten Vorgangs wird der Pfad rekonstruiert.
+
+\begin{algorithm} 
+\caption{A* Pfadrekonstruktion} 
+\label{alg:rec} 
+\begin{algorithmic}
+	\REQUIRE point $goal$, map $predecessor\_map$
+	
+	\STATE new vector $steps$	
+	\STATE $current \leftarrow goal$
+	\STATE add $current$ to $steps$
+	
+	\WHILE{$next \leftarrow predecessor\_map.get(current)$}	
+	
+	\STATE $current \leftarrow next$
+	\STATE add $current$ to $steps$
+
+	\ENDWHILE
+	\STATE reverse $steps$
+	\STATE return $steps$
+	
+\end{algorithmic}
+\end{algorithm}
 
 \section*{Eigenschaften}
+
+
+
+
 
 
 \section*{Visualisierung}
 
 \section*{Fazit}
+
+In vielen Einsatzgebieten gehört der A* mittlerweile zum Standardkanon der Algorithmik. Insbesondere in der Robotik dürfte niemand mehr daran vorbeikommen, sich zumindest grundlegend mit dessen Funktionsweise zu beschäftigen.
+
 % \end{multicols}
 
 
 \begin{thebibliography}{99}
-\bibitem{Goos1947}F.Goos und H.Hänchen: {\it Ein neuer fundamentaler Versuch zur Totalreflektion}, 1947; Annalen der Physik 436, S. 333-346
-\bibitem{Einstein1905}A.Einstein {\it Zur Elektrodynamik bewegter Körper}, 1905; Annalen der Physik und Chemie 17, S. 891-921
-\bibitem{Gerhards2008}H.Gerhards: {\it Ground Penetrating Radar as a Quantative Tool with Applications in Soil Hydrology}, Heidelberg 2008; Dissertaton,
-\bibitem{Wittgenstein1922}L.Wittgenstein: {\it Tractatus Logico-Philo\-so\-phi\-cus}, London 1922; Kegan Paul, Trench, Trubner \& Co., Ltd.
+\bibitem{b1} P. E. Hart, N. J. Nilsson und B. Raphael, ``A Formal Basis for the Heuristic Determination of Minimum Cost Paths'' IEEE Transactions of Systems  Science and Cybernetics, Vol. 4, No. 2, Juli 1968.
+\bibitem{b2} W. Zeng und R.L. Church, ``Finding shortest paths on real road networks: the case for A*'' International Journal of Geographical Information Science, Vol. 23, No. 4, April 2009.
+
 \end{thebibliography}
 
 \end{document}
