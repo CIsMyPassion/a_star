@@ -76,9 +76,28 @@ Diese Ausarbeitung befasst sich mit dem als A* (sprich: a-star) bekannten Suchal
 \end{abstract}
 
 \section*{Einleitung}
+Bei A* handelt es sich um einen Wegfindungsalgorithmus.
+Das Ziel von diesem ist es in einem informiertem Graphen den kürzesten Weg von einem Startknoten zu einem Zielknoten zu finden.
+Der Algorithmus benötigt zu den normalen Daten eine Graphs zusätzliche Informationen, daher benötigt er einen informierten Graph.
+Neben den Abständen der einzelnen Knoten muss die Position von jedem Knoten im Graphen bekannt sein.
 
+Bei dem Weg, der durch den A* Algorithmus gefunden wird handelt es sich um eine optimale Lösung, es ist also garantiert, dass es sich um den kürzesten möglichen Weg handelt.
 
 \section*{Anwendungsgebiete}
+Der A* Algorithmus ist vielseitig einsetzbar.
+Ein häufiges Anwendungsgebiet die die Wegplanung für autonome Roboter.
+Diese verwendung liegt zudem nahe, da der Algorithmus zu diesem Zweck entwickelt wurde.
+
+Neben der Robotik ist dieser Suchalgorithmus gut für Probleme geeignet, die sich in ein zweidimensionales Feld mit diskreten Punkten einteilen lassen.
+Jeder dieser Punkte symbolisiert dabei eine Knoten des Graphen.
+Zudem sind bei derartigen Problemen die Informationen über die Positionen der einzelnen Knoten gegeben.
+Aufgrund dieser Gegebenheit ist der A* Algorithmus beziehungsweise angepasste Versionen von diesem häufig in Strategiespielen verwenden.
+Für diese Spiele, aber auch Spiele wie Warcraft III, in welchem A* verwendet wird ist die Eigenschaft, dass der Algorithmus die optimale Lösung findet eine wichtige Eigenschaft.
+
+A* wird jedoch nicht nur für die Traversierungsprobleme, für die der Algorithmus ursprünglich entwickelt wurde.
+Einses dieser Anwendungsgebiete ist das parsen von stochastischen Grammatiken für Natural Language Processing.
+Bei diesen Problemen handelt es sich um die Verarbeitung von menschlicher Sprache durch Computer.
+In diesem Feld kann der A* Algorithmus verwendet werden, um Wörter und Sätze zu erkennen oder zu erzeugen.
 
 \section*{Funktionsweise}
 

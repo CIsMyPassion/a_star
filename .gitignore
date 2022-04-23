@@ -40,3 +40,4 @@ Cargo.lock
 /latex/*.out
 /latex/*.synctex.gz
 /latex/*.pdf
+/latex/.auctex-auto/
