@@ -77,8 +77,8 @@ Diese Ausarbeitung befasst sich mit dem als A* (sprich: a-star) bekannten Suchal
 
 \section*{Einleitung}
 Bei A* handelt es sich um einen Wegfindungsalgorithmus.
-Das Ziel von diesem ist es in einem informiertem Graphen den kürzesten Weg von einem Startknoten zu einem Zielknoten zu finden.
-Der Algorithmus benötigt zu den normalen Daten eine Graphs zusätzliche Informationen, daher benötigt er einen informierten Graph.
+Das Ziel von diesem ist es in einem gewichteten Graphen den kürzesten Weg von einem Startknoten zu einem Zielknoten zu finden.
+Der Algorithmus benötigt zu den normalen Daten eine Graphs zusätzliche Informationen, daher benötigt er eine Heuristik, womit er in die Klasse der informierten Suchalgorithmen fällt.
 Neben den Abständen der einzelnen Knoten muss die Position von jedem Knoten im Graphen bekannt sein.
 
 Bei dem Weg, der durch den A* Algorithmus gefunden wird handelt es sich um eine optimale Lösung, es ist also garantiert, dass es sich um den kürzesten möglichen Weg handelt.
@@ -86,16 +86,16 @@ Bei dem Weg, der durch den A* Algorithmus gefunden wird handelt es sich um eine 
 \section*{Anwendungsgebiete}
 Der A* Algorithmus ist vielseitig einsetzbar.
 Ein häufiges Anwendungsgebiet die die Wegplanung für autonome Roboter.
-Diese verwendung liegt zudem nahe, da der Algorithmus zu diesem Zweck entwickelt wurde.
+Diese verwendung liegt zudem nahe, da der Algorithmus zu diesem Zweck 1968 im Rahmen eines Robotikprojekts an der Stanford University entwickelt wurde \cite{b1}.
 
 Neben der Robotik ist dieser Suchalgorithmus gut für Probleme geeignet, die sich in ein zweidimensionales Feld mit diskreten Punkten einteilen lassen.
 Jeder dieser Punkte symbolisiert dabei eine Knoten des Graphen.
 Zudem sind bei derartigen Problemen die Informationen über die Positionen der einzelnen Knoten gegeben.
-Aufgrund dieser Gegebenheit ist der A* Algorithmus beziehungsweise angepasste Versionen von diesem häufig in Strategiespielen verwenden.
-Für diese Spiele, aber auch Spiele wie Warcraft III, in welchem A* verwendet wird ist die Eigenschaft, dass der Algorithmus die optimale Lösung findet eine wichtige Eigenschaft.
+Aufgrund dieser Gegebenheit findet der A* Algorithmus beziehungsweise angepasste Versionen von diesem häufig in Strategiespielen Verwendung.
+Für diese Spiele, aber auch RTS-Spiele wie Warcraft III, in welchem A* verwendet wird, ist die Eigenschaft, dass der Algorithmus die optimale Lösung findet eine wichtige Eigenschaft.
 
-A* wird jedoch nicht nur für die Traversierungsprobleme, für die der Algorithmus ursprünglich entwickelt wurde.
-Einses dieser Anwendungsgebiete ist das parsen von stochastischen Grammatiken für Natural Language Processing.
+A* wird jedoch nicht nur für die Traversierungsprobleme, für die der Algorithmus ursprünglich entwickelt wurde angewendet.
+Eines der anderen Anwendungsgebiete ist das Parsen von stochastischen Grammatiken für Natural Language Processing.
 Bei diesen Problemen handelt es sich um die Verarbeitung von menschlicher Sprache durch Computer.
 In diesem Feld kann der A* Algorithmus verwendet werden, um Wörter und Sätze zu erkennen oder zu erzeugen.
 
@@ -103,8 +103,10 @@ In diesem Feld kann der A* Algorithmus verwendet werden, um Wörter und Sätze z
 
 %Graph als Basis, Initialisierung der Listen, Iterativer Vorwärtschritt, Rekonstruktion des Pfades aus Vorgängerbeziehung, vielleicht als Forschungsfrage Manhattan Metrik und euklidische Metrik als Heuristik vergleichen? Einordnung in künstliche Intelligenz, da Fähigkeit zur Wegfindung Robotern gewisses Maß an Autonomie gibt. 
 
+A* arbeitet auf einem gewichteten Graphen, wobei eine Lösung in einer Folge aus Knoten besteht, die den Pfad beschreiben. In unserer Implementierung wird der Graph als ein zweidimensionales Feld repräsentiert, dessen Elemente die Knoten darstellen. Um tatsächlicht ein Problem zu lösen, das über die triviale Situation eines leeren Feldes hinausgeht, dürfen einzelne Elemente des Feldes nicht traversierbar sein. Es gibt also zwei unterschiedliche Feldelemente die wir im Folgenden als \textit{Floor} für die traversierbaren und \textit{Wall} für die nicht traversierbaren bezeichnen.
 
-Zunächst wird ein zufälliges Feld mit Hindernissen als Umgebung generiert. Der Initialisierungschritt ist in Algorithmus \ref{alg:ainit} dargestellt. 
+
+Zunächst wird demnach zufälliges Feld mit Hindernissen als Umgebung generiert. Der Initialisierungschritt ist in Algorithmus \ref{alg:ainit} dargestellt. 
 
 \begin{algorithm} 
 \caption{A* Initialisierung} 
@@ -134,7 +136,13 @@ Zunächst wird ein zufälliges Feld mit Hindernissen als Umgebung generiert. Der
 \end{algorithmic}
 \end{algorithm}
 
-Auf dem generierten Feld wird die Suchfunktion des A* ausgeführt. In Algorithmus \ref{alg:find} wird der Suchschritt gezeigt.
+Auf dem generierten Feld wird schließlich die Wegfindung, der eigentliche A* ausgeführt. Zentrales Element dabei ist die sogenannte Evaluierungsfunktion. 
+
+\begin{equation}
+f(n) = g(n) + h(n)
+\end{equation}
+
+In Algorithmus \ref{alg:find} wird dieser Vorgang spezifiziert. Wichtig ist dabei, dass nur Feldelemente als Nachbarn beachtet werden, die auch traversierbar, daher kein Element vom Typ \textit{Wall} sind. Als Eingabe wird zusätzlich noch jeweils ein Element benötigt, das den Startknoten und den Zielknoten festlegt.
 
 \begin{algorithm} 
 \caption{A* Wegfindung} 
@@ -172,7 +180,7 @@ Auf dem generierten Feld wird die Suchfunktion des A* ausgeführt. In Algorithmu
 \end{algorithmic}
 \end{algorithm}
 
-Mittels des in Algorithmus \ref{alg:find} spezifizierten Vorgangs wird der Pfad rekonstruiert.
+Damit steht nun eine Datenstruktur zur Verfügung, die einzelnen Elementen eine Vorgängerbeziehung zuordnet. Mittels des in Algorithmus \ref{alg:find} spezifizierten Vorgangs muss daher zunächst noch der Pfad rekonstruiert werden.
 
 \begin{algorithm} 
 \caption{A* Pfadrekonstruktion} 
@@ -196,9 +204,11 @@ Mittels des in Algorithmus \ref{alg:find} spezifizierten Vorgangs wird der Pfad 
 \end{algorithmic}
 \end{algorithm}
 
+Die finale Ausgabe ist schlussendlich ein Feld, dass die Elemente des optimalen Pfades in der Reihenfolge von Start zum Zielknoten enthält.
+
 \section*{Eigenschaften}
 
-
+Eine der wesentlichen Eigenschaften von A* ist die Optimalität, daher die Tatsache, dass der Algorithmus zu einem gegebenen Problem die optimale Lösung findet. Dies setzt voraus, dass eine geeignete Evaluierungsfunktion bzw. Heuristik verwendet wird \cite{b1}. 
 
 
 
@@ -207,7 +217,11 @@ Mittels des in Algorithmus \ref{alg:find} spezifizierten Vorgangs wird der Pfad 
 
 \section*{Fazit}
 
-In vielen Einsatzgebieten gehört der A* mittlerweile zum Standardkanon der Algorithmik. Insbesondere in der Robotik dürfte niemand mehr daran vorbeikommen, sich zumindest grundlegend mit dessen Funktionsweise zu beschäftigen.
+In vielen Einsatzgebieten gehört der A* mittlerweile zum Standardkanon der Algorithmik. Insbesondere in der Robotik dürfte niemand mehr daran vorbeikommen, sich zumindest grundlegend mit dessen Funktionsweise zu beschäftigen. Auch dient er als Basis für eine ganze Reihe an optimierten und spezialisierten Algorithmen, die in verschiedenen Bereichen Verwendung finden. Damit hat A* trotz seines Alters bis heute eine hohe praktische Relevanz.
+
+\section*{Programmcode}
+
+Die hier beschriebene Implementierung ist auf GitHub unter dem Link \\ https://github.com/CIsMyPassion/a\_star zu finden.
 
 % \end{multicols}
 
