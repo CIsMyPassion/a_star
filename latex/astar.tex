@@ -58,6 +58,8 @@
 
 \newcommand{\ownsection}[1]{\begin{center}\LARGE\bf#1\end{center}}
 
+\usepackage{hyperref}
+
 \begin{document}
 
 \twocolumn[
@@ -76,6 +78,7 @@ Diese Ausarbeitung befasst sich mit dem als A* (sprich: a-star) bekannten Suchal
 \end{abstract}
 
 \section*{Einleitung}
+
 Bei A* handelt es sich um einen Wegfindungsalgorithmus.
 Das Ziel von diesem ist es in einem gewichteten Graphen den kürzesten Weg von einem Startknoten zu einem Zielknoten zu finden.
 Der Algorithmus benötigt zu den normalen Daten eine Graphs zusätzliche Informationen, daher benötigt er eine Heuristik, womit er in die Klasse der informierten Suchalgorithmen fällt.
@@ -84,6 +87,7 @@ Neben den Abständen der einzelnen Knoten muss die Position von jedem Knoten im 
 Bei dem Weg, der durch den A* Algorithmus gefunden wird handelt es sich um eine optimale Lösung, es ist also garantiert, dass es sich um den kürzesten möglichen Weg handelt.
 
 \section*{Anwendungsgebiete}
+
 Der A* Algorithmus ist vielseitig einsetzbar.
 Ein häufiges Anwendungsgebiet die die Wegplanung für autonome Roboter.
 Diese verwendung liegt zudem nahe, da der Algorithmus zu diesem Zweck 1968 im Rahmen eines Robotikprojekts an der Stanford University entwickelt wurde \cite{b1}.
@@ -215,13 +219,36 @@ Eine der wesentlichen Eigenschaften von A* ist die Optimalität, daher die Tatsa
 
 \section*{Visualisierung}
 
+Im Folgenden wird die Visualisierung des A* Algorithmus dargestellt.
+Die beiden dargestellten Bilder sind durch das Programm, dass im Abschnitt Programmcode zu finden ist automatisch erstellt.
+Bei der Visualisierung wird der gefundene, optimale Weg farblich gekennzeichnet.
+Die weißen Felder im Bild sind diese, die begehbar sind und schwarze solche, über die nicht traversiert werden kann.
+Zudem ist anzumerken, dass in der verwendeten Implementierung die Bewegung grundsätzlich in alle acht Richtungen möglich ist.
+
+Der Startpunkt des visualisierten Weges ist rot gekennzeichnet, während der Zielknoten grün gefärbt ist.
+Die Felder, die für den Weg abgegangen werden müssen stellen eine Farbübergang von rot zu grün da, je weiter sie vom Startpunkt entfernt werden.
+
+Das erste Bild, dass das Ergebnis des Algorithmus darstellt ist auf ein 16 x 16 Feld angewendet.
+Start- und Endkonten befinden sich in gegenüber liegenden Ecken des Feldes.
+Diese Wahl der Punkte gilt ebenfalls für das zweite Beispiel, bei dem es sich jedoch um ein Feld mit einr Größe von 64 x 64 Feldern handelt.
+
+\begin{figure}[!h]
+	\center
+	\includegraphics*[width=\columnwidth]{"images/small_path.png"}
+\end{figure}
+
+\begin{figure}[!h]
+	\center
+	\includegraphics*[width=\columnwidth]{"images/big_path.png"}
+\end{figure}
+
 \section*{Fazit}
 
 In vielen Einsatzgebieten gehört der A* mittlerweile zum Standardkanon der Algorithmik. Insbesondere in der Robotik dürfte niemand mehr daran vorbeikommen, sich zumindest grundlegend mit dessen Funktionsweise zu beschäftigen. Auch dient er als Basis für eine ganze Reihe an optimierten und spezialisierten Algorithmen, die in verschiedenen Bereichen Verwendung finden. Damit hat A* trotz seines Alters bis heute eine hohe praktische Relevanz.
 
 \section*{Programmcode}
 
-Die hier beschriebene Implementierung ist auf GitHub unter dem Link \\ https://github.com/CIsMyPassion/a\_star zu finden.
+Die hier beschriebene Implementierung ist auf GitHub unter dem Link \url{https://github.com/CIsMyPassion/a\_star} zu finden.
 
 % \end{multicols}
 
